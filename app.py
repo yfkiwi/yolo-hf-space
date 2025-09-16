@@ -69,23 +69,24 @@ custom_css = """
 }
 """
 
-# Download and load model
+# Load model (simplified)
+# 修改模型加载部分
 def load_model():
     try:
         print("🔄 Downloading TimHortons detection model...")
         model_path = hf_hub_download(
             repo_id="Eviekiwi/timhortons-cup-yolo-detection",
             filename="best_model_v6.pt",
-            repo_type="space"
+            # 注意：这里不要写 repo_type="space"，默认就是 model
         )
         print("✅ Model downloaded successfully!")
         
-        print("🔄 Loading YOLO model...")
+        print("🔄 Loading custom YOLO model...")
         model = YOLO(model_path)
-        print("✅ Model loaded and ready for detection!")
+        print("✅ Custom TimHortons model loaded!")
         return model
     except Exception as e:
-        print(f"❌ Error loading model: {str(e)}")
+        print(f"❌ Error loading custom model: {str(e)}")
         print("🔄 Falling back to pretrained YOLOv8 model...")
         return YOLO('yolov8n.pt')
 
@@ -107,14 +108,13 @@ def predict_image(image, confidence_threshold=0.5):
         return None, json.dumps({"error": "No image uploaded"}, indent=2)
     
     try:
-        # Set confidence threshold for detection
-        model.conf = confidence_threshold
+        # Run inference with confidence threshold
+        results = model.predict(image, conf=confidence_threshold)
         
-        # Run inference on the image
-        results = model(image)
-        
-        # Generate annotated image with bounding boxes
-        annotated_img = results[0].plot()
+        # Convert NumPy array to PIL Image for Gradio
+        from PIL import Image as PILImage
+        annotated_np = results[0].plot()
+        annotated_img = PILImage.fromarray(annotated_np)
         
         # Extract detection information
         detections = {
@@ -130,8 +130,8 @@ def predict_image(image, confidence_threshold=0.5):
             for i, box in enumerate(results[0].boxes):
                 detection = {
                     "detection_id": i + 1,
-                    "class_name": results[0].names[int(box.cls)],
-                    "confidence_score": round(float(box.conf), 3),
+                    "class_name": results[0].names[int(box.cls[0])],
+                    "confidence_score": round(float(box.conf[0]), 3),
                     "bounding_box": {
                         "x1": round(float(box.xyxy[0][0]), 1),
                         "y1": round(float(box.xyxy[0][1]), 1),
@@ -157,13 +157,8 @@ def predict_image(image, confidence_threshold=0.5):
         return None, json.dumps(error_response, indent=2)
 
 def create_examples():
-    """Create example images for users to try"""
-    # Note: In a real deployment, you'd want to include actual example images
-    return [
-        ["example_tim_cup.jpg", 0.5],
-        ["example_tim_donut.jpg", 0.3],
-        ["example_tim_coffee.jpg", 0.7]
-    ]
+    """Examples section removed for simplicity"""
+    return []
 
 # Create the Gradio interface
 with gr.Blocks(css=custom_css, title="TimHortons Detection System") as demo:
@@ -239,15 +234,7 @@ with gr.Blocks(css=custom_css, title="TimHortons Detection System") as demo:
             
             gr.HTML('</div>')
     
-    # Examples section
-    gr.HTML("""
-        <div style="margin-top: 30px;">
-            <h3 style="text-align: center; color: #d62300;">Try These Examples:</h3>
-            <p style="text-align: center; color: #666;">
-                Click on any example below to see the detection system in action!
-            </p>
-        </div>
-    """)
+    # Examples section removed for simplicity
     
     # Event handlers
     detect_btn.click(
@@ -282,10 +269,4 @@ with gr.Blocks(css=custom_css, title="TimHortons Detection System") as demo:
 
 # Launch configuration
 if __name__ == "__main__":
-    demo.launch(
-        share=False,
-        server_name="0.0.0.0",
-        server_port=7860,
-        show_error=True,
-        show_tips=True
-    )
+    demo.launch()
