@@ -1,0 +1,7 @@
+gradio==4.44.0
+torch
+torchvision
+ultralytics
+pillow
+opencv-python-headless
+huggingface-hub
