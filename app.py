@@ -74,6 +74,7 @@ custom_css = """
 def load_model():
     try:
         print("🔄 Downloading TimHortons detection model...")
+        print("⏳ Please wait, this may take a moment due to free-tier CPU limitations...")
         model_path = hf_hub_download(
             repo_id="Eviekiwi/timhortons-cup-yolo-detection",
             filename="best_model_v6.pt",
@@ -172,11 +173,15 @@ with gr.Blocks(css=custom_css, title="TimHortons Detection System") as demo:
     # Description
     gr.HTML("""
         <div class="description-text">
-            <p><strong>Discover the TIMS in your world!</strong></p>
-            <p>This AI-powered detection system uses a custom-trained YOLOv8 model to identify TimHortons items in your images. 
-            Whether it's the iconic double-double coffee cup, delicious donuts, or other TIMS merchandise, 
-            our model will help you spot those familiar red and white traces of Canadian coffee culture.</p>
+            <p><strong>🍁Spot Tims Cups Instantly!</strong></p>
+            <p> Ever wondered if that coffee paper cup in your photo is actually from Tim Hortons? This smart AI can tell the difference! 
+We've trained a YOLOv8 model to recognize those iconic red and white Tims cups and separate them from all the other 
+coffee shop cups out there. Whether you're organizing your photos, doing some brand research, or just curious about 
+that cup sitting on your desk - let's see if it's the real Canadian deal!</p>
             <p>Simply upload an image and watch as our AI finds every TimHortons item with precision!</p>
+            <p style="color: #ff6b35; font-weight: bold; background-color: #fff3e0; padding: 10px; border-radius: 5px; border-left: 4px solid #ff6b35; margin-top: 15px;">
+                ⏳ <strong>Note:</strong> Due to free-tier CPU limitations, model loading and detection may take a bit longer. Please be patient!
+            </p>
         </div>
     """)
     
